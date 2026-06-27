@@ -1,0 +1,995 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0; 
+                padding: 16px; 
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+                border-top: 2px solid #f0f0f0;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">实时分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">365 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">50 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">06-27 21:48</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">ai 人工智能 agent</div>
+                            <div class="word-count hot">26 条</div>
+                        </div>
+                        <div class="word-index">1/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f094a-5dac-7dd8-b142-51e3e0190ce9" target="_blank" class="news-link">Saudi foreign ministry condemned Iran&#x27;s attack on Bahrain, calling it a violation of international law.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/charts/41959316" target="_blank" class="news-link">AI自我回报开始了：季度收入首超基础设施折旧</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">ProductHunt</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/folio-ai?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Folio AI</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">联合早报</span><span class="rank-num high">4</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zaochenbao.com/news/politics/202606/2775116.html" target="_blank" class="news-link">AI泡沫忧虑升温 专家警告破裂冲击恐甚于历次股灾</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num high">4</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f092c-7b60-7dd8-b142-4406e569b007" target="_blank" class="news-link">HEZBOLLAH leader said the Israel-Lebanon framework agreement is invalid, vowed to continue pressure until Israel withdraws from Lebanon, and urged the Lebanese government to abandon the framework.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num high">4</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410938?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">【电报解读】AI算力需求爆发式增长，半导体设备迎来增长大年，机构称半导体核心零部件在设备成本中占比较高，将持续受益于先进制程及多腔化升级，这家公司是首家实现等离子体射频电源系统量产的国产厂商</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">靠谱新闻</span><span class="rank-num ">7</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://kaopu.news/story/2026-06-27/%E9%AB%98%E6%A0%A1%E5%AF%86%E9%9B%86%E8%AE%BE%E7%AB%8B%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E7%AD%89%E6%96%B0%E5%AD%A6%E9%99%A2%E6%8E%A8%E5%8A%A8%E4%BA%A7%E6%95%99%E8%9E%8D%E5%90%88-70996f" target="_blank" class="news-link">高校密集设立人工智能等新学院推动产教融合</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num ">7</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/charts/41959315" target="_blank" class="news-link">资本当下只看企业AI，2029年是消费AI转折点</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">10</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f08d6-28ff-7dd8-b142-16cfc2ba2b8c" target="_blank" class="news-link">Iranian state television reports Iran’s transit directive for the Strait of Hormuz remains in effect; all vessels transiting the strait must contact and coordinate with the Islamic Revolutionary Guard Corps Navy (IRGC Navy).</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">10</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410921?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">【电报解读】AI相关的电源功率订单爆满，功率半导体再启阶梯式调价！分析师强Call功率半导体正被视为继DRAM之后的新增长引擎，这家公司的功率半导体产品可用于ai服务器电源芯片</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">IT之家</span><span class="rank-num ">12</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/969/475.htm" target="_blank" class="news-link">Linux 内核新补丁可提升大型 RAID5 阵列性能，最高增益 17%</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">13</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f08bf-7417-7dd8-b141-fca4fc354310" target="_blank" class="news-link">Iranian state TV said more vessels are seeking Iran&#x27;s permission to transit the Strait of Hormuz after warning shots were fired at unauthorized ships.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">15</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f08b5-18e4-7dd8-b141-ef4b84d6836e" target="_blank" class="news-link">Kuwait condemned Iran’s attack on Bahraini territory, saying it seriously undermines efforts to maintain peace and stability and poses a threat to regional security.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num ">15</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=48645510" target="_blank" class="news-link">Task Failed Successfully: Saturating NIC and Disk Bandwidth</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">16</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f08a2-06fa-7dd8-b141-e1c6d4e6f315" target="_blank" class="news-link">Germany&#x27;s foreign minister said Berlin supports implementing the Israel-Lebanon agreement and that maintaining the Lebanese state&#x27;s monopoly on the use of force is essential.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">17</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f08a1-9c26-7dd8-b141-ddff25e39761" target="_blank" class="news-link">Germany&#x27;s foreign minister said an agreement between Israel and Lebanon strengthens both countries&#x27; security and offers an opportunity to resolve a decades-long conflict.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">19</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0898-4dba-7dd8-b141-cea937e76f96" target="_blank" class="news-link">Iran Civil Aviation Organization says Tehran–Dubai flights will resume on July 1.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">18</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">22</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0890-6488-7dd8-b141-b36b2d33e647" target="_blank" class="news-link">Iranian parliament&#x27;s National Security and Foreign Policy Committee spokesman Rezaei said the US violated a memorandum to end hostilities by stoking tensions in the Strait of Hormuz and warned any such violations would be met with a swift, decisive response.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">19</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">24</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0885-a484-7dd8-b141-a7a4efdbc75b" target="_blank" class="news-link">Iran&#x27;s Islamic Republic News Agency reported the foreign ministers of Oman and Egypt spoke, discussing bilateral relations, the regional situation and navigation safety in the Strait of Hormuz.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">20</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">25</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f087b-7ef9-7dd8-b141-98c9d10c44bd" target="_blank" class="news-link">China, Russia conduct 11th joint strategic air patrol</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">21</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">27</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0876-20dd-7dd8-b141-8a219d796bbd" target="_blank" class="news-link">UK Maritime Trade Operations received a report of an incident inside the Strait of Hormuz. The captain of an oil tanker reported the vessel was struck by an unidentified projectile and the ship’s bridge was damaged. All crew are reported safe and there are no reports of environmental damage.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">22</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">28</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0872-0bef-7dd8-b141-86715e495698" target="_blank" class="news-link">UAE foreign minister praised efforts by Lebanon and Israel to reach a framework agreement.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">23</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">靠谱新闻</span><span class="rank-num ">29</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://kaopu.news/story/2026-06-27/%E4%B8%93%E5%AE%B6%E8%AD%A6%E5%91%8Aai%E6%B3%A1%E6%B2%AB%E7%A0%B4%E8%A3%82%E5%86%B2%E5%87%BB%E6%81%90%E7%94%9A%E4%BA%8E%E5%8E%86%E6%AC%A1%E8%82%A1%E7%81%BE-76d38b" target="_blank" class="news-link">专家警告AI泡沫破裂冲击恐甚于历次股灾</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">24</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">掘金</span><span class="rank-num ">29</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7655097833112518666" target="_blank" class="news-link">未来，什么才是 AI“正确的使用方式”</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">25</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">30</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0867-8c61-7dd8-b141-711c52d44bec" target="_blank" class="news-link">Guanggu unveils tech-finance package aiming for over 100 listed firms</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">26</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">30</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410903?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">功率半导体再启阶梯式调价 有厂商表示“AI相关的电源功率订单爆满 根本做不过来”</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">claude Anthropic</div>
+                            <div class="word-count ">4 条</div>
+                        </div>
+                        <div class="word-index">2/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410948?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">财联社6月27日电，据报道，特朗普政府即将允许Anthropic重新恢复对其强大的Fable 5模型的访问权限。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num high">5</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019f0928-a1b8-7dd8-b142-3c763acd83da" target="_blank" class="news-link">US may lift restrictions on Anthropic&#x27;s Fable 5 as soon as next week</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num high">5</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260627205748841800" target="_blank" class="news-link">美国政府或最早于下周解除对Anthropic Fable 5模型的限制</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">掘金</span><span class="rank-num ">25</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7655263874610429993" target="_blank" class="news-link">深入理解Claude Code：CLAUDE.md、Hooks、Skills、Subagents</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">特斯拉 马斯克</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">3/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">IT之家</span><span class="rank-num high">4</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/969/484.htm" target="_blank" class="news-link">特斯拉就首例 FSD 行人致命事故达成和解，NHTSA 调查持续深入</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 深度</span><span class="rank-num high">5</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2410875" target="_blank" class="news-link">马斯克拟收购光模块公司Mesh：SpaceX算力业务有望得到加强</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">IT之家</span><span class="rank-num ">27</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/969/440.htm" target="_blank" class="news-link">美国结束 37.6 万辆特斯拉 Model 3/Y 转向问题调查：召回后问题已解决</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">科技</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">4/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">格隆汇</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.gelonghui.com/news/5259197" target="_blank" class="news-link">迅策科技：股份回购方案获2025年度股东大会审议通过</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 深度</span><span class="rank-num ">16</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2410813" target="_blank" class="news-link">2300多亿市值拓荆科技拟购尚积半导体控股权 拓展半导体薄膜沉积与刻蚀领域</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">22</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410922?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">武汉光谷出台一揽子科技金融新政 上市企业力争突破100家</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">A股 科创 上证</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">5/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">8</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3125593" target="_blank" class="news-link">下周A股解禁市值逾1000亿元</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">9</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410941?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">下周A股解禁市值逾1000亿元 16股解禁比例逾10%</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">12</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260627192218121800" target="_blank" class="news-link">下周A股解禁市值逾1000亿元 16股解禁比例逾10%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">DeepSeek 梁文锋</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">6/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num ">6</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775676" target="_blank" class="news-link">刚刚，DeepSeek V4更新DSpark，推理速度提升80%</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最热</span><span class="rank-num ">9</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775676" target="_blank" class="news-link">刚刚，DeepSeek V4更新DSpark，推理速度提升80%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">chatgpt openai sora</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">7/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 深度</span><span class="rank-num top">2</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2410940" target="_blank" class="news-link">苹果又一高层出走：Vision Pro负责人转投OpenAI 将组建硬件部门</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num ">9</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775673" target="_blank" class="news-link">海外研究员眼中的中国AI：智谱是“中国Palantir”，MiniMax对标Character AI，豆包是“中国ChatGPT”</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">芯片 光刻机</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">8/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最热</span><span class="rank-num ">7</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775675" target="_blank" class="news-link">外媒：苹果寻求获准从长鑫存储购买内存芯片</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num ">8</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775675" target="_blank" class="news-link">外媒：苹果寻求获准从长鑫存储购买内存芯片</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">微软 Microsoft</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">9/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">IT之家</span><span class="rank-num ">17</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.ithome.com/0/969/469.htm" target="_blank" class="news-link">Epic CEO 斯威尼：不管是索尼、微软还是 Valve，谁都无法垄断游戏行业</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">英伟达 NVIDIA 黄仁勋</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">10/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num high">5</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3775674" target="_blank" class="news-link">英伟达AI版图再扩张！数据中心以太网交换机收入暴增193%，悄然登顶全球第一</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">iphone ipad mac ios</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">11/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">ProductHunt</span><span class="rank-num high">4</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/retromac?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">RetroMac</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">美股 纳斯达克 港股</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">12/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 深度</span><span class="rank-num ">21</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2410784" target="_blank" class="news-link">【早报】美军再次对伊朗发动打击；美股半导体指数重挫5.29%；油价走低、黄金收涨；法国4-1击败挪威小组第一出线</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">黄金 白银</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">13/13</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">26</span><span class="time-info">21时48分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2410910?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">兴业银行：上调代理上海黄金交易所个人贵金属买卖业务延期合约保证金比例</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    
