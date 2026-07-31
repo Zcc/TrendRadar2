@@ -1,0 +1,949 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0; 
+                padding: 16px; 
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+                border-top: 2px solid #f0f0f0;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">实时分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">217 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">49 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">08-01 05:07</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">ai 人工智能 agent</div>
+                            <div class="word-count hot">16 条</div>
+                        </div>
+                        <div class="word-index">1/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num top">1</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=49127306" target="_blank" class="news-link">Tailscale didn&#x27;t stop the Hugging Face intrusion</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num top">2</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9e3-5dc3-7aab-8f3d-d7515acceb66" target="_blank" class="news-link">The New York Times reports Fed Chair KEVIN WARSH is considering reducing the frequency of Federal Reserve policy meetings.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num high">4</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=49127031" target="_blank" class="news-link">Golang proposal: container/: generic collection types</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num high">5</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9de-48a3-7aab-8f3d-babadf80f9f5" target="_blank" class="news-link">Amazon eases AI-capex fears; major US indexes end higher</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">7</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9da-eb83-7aab-8f3d-a87de0d699de" target="_blank" class="news-link">Hamas leader said Israel has disregarded US mediators in recent months; if Israel does not comply with the plan&#x27;s terms, Hamas will not fulfill its obligations.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">7</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801042925321800" target="_blank" class="news-link">亚马逊缓解市场对人工智能的担忧，美国主要股指收高</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">8</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9da-634b-7aab-8f3d-a4fd48efa51f" target="_blank" class="news-link">Hamas leader said the Gaza peace agreement is a comprehensive package; mediators have expressed positive signals, but past experience shows Israel has breached agreements.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">10</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7668540826486865930/" target="_blank" class="news-link">保时捷女销冠回应被AI合成不雅视频</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">12</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143459" target="_blank" class="news-link">华尔街自2020年以来最大规模资金轮动，暴露AI交易拥挤风险</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num ">15</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=49126919" target="_blank" class="news-link">Using the railway network as a flatbed scanner [video]</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num ">17</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=49126943" target="_blank" class="news-link">Orca-Bench: How Ready Are Language Model Agents for Oncall?</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">18</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9c8-99ae-7aab-8f3d-558b0633bb9d" target="_blank" class="news-link">Brazil&#x27;s oil regulator said gasoline will be required to contain a 32% ethanol blend from Aug. 1 for 180 days.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">21</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9c1-9285-7aab-8f3d-3b164940fc1c" target="_blank" class="news-link">Egypt will raise residential electricity tariffs across consumption tiers by an average 12%, while keeping the first-tier (lowest) tariff unchanged, according to a statement.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">22</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9b4-02c4-7aab-8f3d-37f899a0e958" target="_blank" class="news-link">CFTC: For the week ended July 28, equity fund managers raised S&amp;P 500 futures (CME) net long positions by 12,702 contracts to 939,115. Equity fund speculators cut S&amp;P 500 futures (CME) net short positions by 28,795 contracts to 287,277.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">28</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9a4-321d-7aab-8f3d-02ee8b269001" target="_blank" class="news-link">CENTCOM spokesman Capt. Tim Hawkins said on Friday local time the US military did not participate in altering the course of Qatar&#x27;s LNG tanker Al Areesh en route to Pakistan. A source said the vessel had earlier suspended its voyage to Pakistan at Iran&#x27;s request.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">30</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb99d-f9da-7aab-8f3c-f12951700ad0" target="_blank" class="news-link">IRNA reported an Iraqi armed forces spokesman said the government has ordered heightened alert and combat-readiness at all barracks and military bases.</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">chatgpt openai sora</div>
+                            <div class="word-count warm">9 条</div>
+                        </div>
+                        <div class="word-index">2/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">7</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2443131?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">财联社8月1日电，据消息人士透露，OpenAI调查人员发现有证据表明，有其他AI智能体已突破了管控限制。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">10</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9d6-d329-7aab-8f3d-92c36130f834" target="_blank" class="news-link">Sources: OpenAI investigators find further evidence of AI agents breaching containment</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">11</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9d1-ecfd-7aab-8f3d-8dc6b1f70587" target="_blank" class="news-link">Market sources say OpenAI investigators have found evidence suggesting other AI agents have circumvented safety controls.</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">11</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143460" target="_blank" class="news-link">OpenAI发现其他AI智能体逃离隔离环境的证据。（路透）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">12</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801042118367800" target="_blank" class="news-link">消息人士：OpenAI调查人员发现更多AI智能体突破隔离的证据</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">13</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801041603854800" target="_blank" class="news-link">市场消息：据消息人士透露，OpenAI调查人员发现有证据表明，有其他AI智能体已突破了管控限制。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">法布财经 快讯</span><span class="rank-num ">20</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206436_212_1" target="_blank" class="news-link">人工智能公司Anthropic、OpenAI遭遇网络安全事故，暴露出美国存在安全隐患。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">快讯通</span><span class="rank-num ">22</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206436_212_1" target="_blank" class="news-link">人工智能公司Anthropic、OpenAI遭遇网络安全事故，暴露出美国存在安全隐患。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">24</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143443" target="_blank" class="news-link">专家：Anthropic与OpenAI入侵事件预示美国安全风险</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">黄金 白银</div>
+                            <div class="word-count warm">8 条</div>
+                        </div>
+                        <div class="word-index">3/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">快讯通</span><span class="rank-num top">1</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206515_103_1" target="_blank" class="news-link">现货黄金周五跌约1.3%，7月纽约铜涨超5.7%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 最新</span><span class="rank-num high">4</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/articles/3778461" target="_blank" class="news-link">金价回调之际Tether购金提速！ Q2再买14吨黄金，储备规模升至146吨</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">13</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2443125?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">CFTC：截至7月28日当周 COMEX黄金投机者将净多头头寸减少3258手</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">法布财经 快讯</span><span class="rank-num ">24</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206426_212_1" target="_blank" class="news-link">美国商品期货交易委员会（CFTC）数据显示，截至7月28日当周，纽约商品交易所（COMEX）白银投机者将净多头头寸削减1614手，至8387手。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">快讯通</span><span class="rank-num ">26</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206426_212_1" target="_blank" class="news-link">美国商品期货交易委员会（CFTC）数据显示，截至7月28日当周，纽约商品交易所（COMEX）白银投机者将净多头头寸削减1614手，至8387手。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">法布财经 快讯</span><span class="rank-num ">26</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206424_103_1" target="_blank" class="news-link">美国商品期货交易委员会（CFTC）：7月28日当周，投机者所持COMEX黄金净多头头寸减少3,258手合约，至120,328手合约。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">27</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143440" target="_blank" class="news-link">美国商品期货交易委员会（CFTC）：7月28日当周，投机者所持COMEX黄金净多头头寸减少3,258手合约，至120,328手合约。 所持COMEX白银净多头头寸降低至8,387手合约，创21周新低。 所持NYMEX钯金净空头头寸降低至6,173手合约，创四周新低。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">快讯通</span><span class="rank-num ">28</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206424_103_1" target="_blank" class="news-link">美国商品期货交易委员会（CFTC）：7月28日当周，投机者所持COMEX黄金净多头头寸减少3,258手合约，至120,328手合约。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">美股 纳斯达克 港股</div>
+                            <div class="word-count warm">5 条</div>
+                        </div>
+                        <div class="word-index">4/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">20</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801040734896800" target="_blank" class="news-link">金十图示：2026年07月31日（周五）美股热门股票行情一览（美股收盘）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">21</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801040711867800" target="_blank" class="news-link">金十图示：2026年07月31日（周五）热门中概股行情一览（美股收盘）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">22</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143446" target="_blank" class="news-link">标普500指数收涨52.09点，涨幅0.70%，报7489.72点。 道琼斯工业平均指数收涨276.97点，涨幅0.53%，报52485.03点。 纳斯达克综合指数（纳指）收涨251.676点，涨幅1%，报25373.853点。 纳斯达克100指数收涨167.849点，涨幅0.60%，报28274.195点。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">23</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143444" target="_blank" class="news-link">标普、纳斯达克100指数涨幅扩大至1%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">金十数据</span><span class="rank-num ">29</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://flash.jin10.com/detail/20260801040544735800" target="_blank" class="news-link">道琼斯指数7月31日（周五）收盘上涨277.45点，涨幅0.53%，报52485.51点；&lt;br/&gt;标普500指数7月31日（周五）收盘上涨52.13点，涨幅0.70%，报7489.76点；&lt;br/&gt;纳斯达克综合指数7月31日（周五）收盘上涨251.68点，涨幅1.00%，报25373.85点。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">科技</div>
+                            <div class="word-count ">4 条</div>
+                        </div>
+                        <div class="word-index">5/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num high">4</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143468" target="_blank" class="news-link">周五（7月31日），美股行业ETF涨跌各异，可选消费ETF收涨3.29%，网络股指数ETF涨2.59%，能源业ETF涨1%，半导体ETF涨0.3%，科技行业ETF跌0.22%，医疗业ETF跌0.59%，生物科技指数ETF跌1.87%。 2026年1-7月，半导体ETF累计上涨50.09%，能源业ETF涨35.03%，全球科技股指数ETF、科技行业ETF至少涨22.09%，可选消费ETF则累跌2.39%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 深度</span><span class="rank-num high">4</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2443112" target="_blank" class="news-link">聚焦打鼾口服疗法 美生物科技公司上市首日股价跳涨</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num high">5</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143467" target="_blank" class="news-link">标普500指数的11个板块中，可选消费板块收涨6.07%，电信板块涨4.6%，工业板块涨0.79%表现第三，信息技术/科技板块跌0.54%，房地产板块跌0.68%，公用事业板块跌0.74%，原材料板块跌2.71%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">21</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143448" target="_blank" class="news-link">纳斯达克金龙中国指数收涨1.47%，报6598.21点，本周累涨8.09%、整体持续走高，7月份累计上涨12.84%，7月1-16日持续上扬、随后持续回撤、24-31日重新持续上涨。 热门中概股里，金山云初步收涨9.9%，阿里涨5.2%，新东方涨4.1%，百胜中国、百度涨超3%。 ETF中，中概互联网指数ETF（KWEB）收涨1.53%，7月份反弹16.43%，2025年10月份以来持续下挫的趋势并无显著改观； XtrackersHarvest中证50（ASHS）收涨1.43%，7月份回撤16.03%； 中国科技指数ETF（CQQQ）收涨1.31%，7月份回撤11.80%，此前三个月先后反弹10.84%、3.51%、8.01%； MSCI新兴市场ex中国ETF（EMXC）收涨1.03%，7月份回撤9.95%； 德银嘉实沪深300指数ETF（ASHR）收跌0.20%，7月份回撤6.71%，此前三个月先后涨8.21%、1.84%、1.92%。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">英伟达 NVIDIA 黄仁勋</div>
+                            <div class="word-count ">3 条</div>
+                        </div>
+                        <div class="word-index">6/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">法布财经 快讯</span><span class="rank-num ">17</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206443_103_1" target="_blank" class="news-link">7月份，美股存储芯片指数跌28.6%，半导体指数跌19.8%，美国科技股七巨头指数涨4.9%，标普大致持平，道指涨0.5%，纳指跌2.5%，银行指数涨3.4%。周五当天，标普500指数初步收涨0.8%，可选消费板块涨6.2%，电信板块涨4.7%，科技板块跌0.2%，原材料板块跌2.7%。纳斯达克100指数初步收涨0.7%，成分股中，亚马逊初步收涨15.6%，德康医疗涨11.9%，谷歌A涨7%，新思科技涨4.5%，英伟达涨3.4%，SpaceX跌3.6%，Strategy跌4%，闪迪跌5.4%，美光科技跌5.6%，恩智浦跌6%，苹果跌7.1%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">快讯通</span><span class="rank-num ">19</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.fastbull.com/cn/fastshort/4206443_103_1" target="_blank" class="news-link">7月份，美股存储芯片指数跌28.6%，半导体指数跌19.8%，美国科技股七巨头指数涨4.9%，标普大致持平，道指涨0.5%，纳指跌2.5%，银行指数涨3.4%。周五当天，标普500指数初步收涨0.8%，可选消费板块涨6.2%，电信板块涨4.7%，科技板块跌0.2%，原材料板块跌2.7%。纳斯达克100指数初步收涨0.7%，成分股中，亚马逊初步收涨15.6%，德康医疗涨11.9%，谷歌A涨7%，新思科技涨4.5%，英伟达涨3.4%，SpaceX跌3.6%，Strategy跌4%，闪迪跌5.4%，美光科技跌5.6%，恩智浦跌6%，苹果跌7.1%。</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">MKT新闻</span><span class="rank-num ">29</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://mktnews.net/flashDetail.html?id=019fb9a0-584f-7aab-8f3c-feac9c866c4c" target="_blank" class="news-link">NVIDIA (NVDA.O) hit an intraday high, trading up over 3%.</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">微软 Microsoft</div>
+                            <div class="word-count ">2 条</div>
+                        </div>
+                        <div class="word-index">7/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社 电报</span><span class="rank-num ">10</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://api3.cls.cn/share/article/2443128?os=web&amp;sv=7.7.5&amp;app=" target="_blank" class="news-link">美股收盘：亚马逊涨超15%创2012年以来单日最大涨幅 微软、亚马逊7月份市值合计增长超1万亿美元</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">20</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143449" target="_blank" class="news-link">本周，谷歌A、亚马逊、微软市值合计增长大约1.5万亿美元</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">iphone ipad mac ios</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">8/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">Hacker News</span><span class="rank-num ">30</span><span class="time-info">05时07分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ycombinator.com/item?id=49127108" target="_blank" class="news-link">Lerd, an open source Herd-like PHP development environment for Linux and macOS</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">芯片 光刻机</div>
+                            <div class="word-count ">1 条</div>
+                        </div>
+                        <div class="word-index">9/9</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻 快讯</span><span class="rank-num ">10</span>
+                            </div>
+                            <div class="news-title"><a href="https://wallstreetcn.com/livenews/3143461" target="_blank" class="news-link">周五（7月31日），美股存储芯片与硬件供应链指数跌1.58%，报189.63点，本周累跌5.30%，7月份累计下跌29.25%、整体持续下挫。 2026年1-7月，成分股闪迪累积上涨411.77%，西部数据涨216.5%，希捷科技涨211.64%，美光科技涨188.53%，应用材料涨98.04%，泰瑞达涨90.11%，拉姆研究涨71.50%，Rambus跌0.94%。此外，最近美国IPO的SK海力士ADR跌14.45%。</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    
